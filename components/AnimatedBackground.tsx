@@ -23,7 +23,7 @@ export const AnimatedBackground = () => {
       VANTA.NET({
         el: containerRef.current,
         THREE: THREE,
-        color: 0xd4af37, // Gold color for nodes
+        color: 0x4b9a7d, // Gold color for nodes
         backgroundColor: 0x0a0e27, // Dark blue background
         points: 12, // Number of dots
         maxDistance: 22, // Connection distance
