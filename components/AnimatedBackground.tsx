@@ -34,7 +34,7 @@ export const AnimatedBackground = () => {
         gyroControls: false,
         scale: 1.0,
         scaleMobile: 1.0,
-        speed: 0.5, // Animation speed
+        speed: 1.5, // Animation speed
       });
     };
 
