@@ -49,6 +49,9 @@ export default function Auth() {
       {/* Animated Background */}
       <AnimatedBackground />
 
+      {/* Blur Overlay */}
+      <div className="absolute inset-0 backdrop-blur-md bg-black bg-opacity-20 z-10"></div>
+
       {/* Back button */}
       <motion.button
         onClick={() => router.back()}
