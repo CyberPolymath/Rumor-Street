@@ -30,6 +30,8 @@ export default function Auth() {
       }
       console.log("Signup:", { email, password });
     }
+    // Navigate to home page
+    router.push("/home");
   };
 
   const containerVariants = {
