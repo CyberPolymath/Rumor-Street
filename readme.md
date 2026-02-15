@@ -4,11 +4,11 @@ RumorStreet is a web-based financial simulation game designed to teach users how
 
 Unlike traditional learning platforms that focus on theory, RumorStreet places users inside a living, dynamic market where information constantly flows, prices react, and every decision has consequences. Users learn by doing, failing, analyzing, and improving.
 
-Core Idea
+## Core Idea
 
 In real markets, prices do not move only because of company performance. They move because of how people react to information. Rumors spread faster than facts, fake news creates panic, and real news often gets misinterpreted. RumorStreet simulates this exact chaos using Generative AI and historical data, so users can understand how markets actually behave instead of how textbooks describe them.
 
-Game Flow Overview
+## Game Flow Overview
 
 When the user enters RumorStreet, they are introduced through an immersive welcome screen with a dynamic animated background, setting the tone of a high-stakes financial world. After authentication, the user lands on the main city-map interface, which acts as the core gameplay environment.
 
@@ -16,7 +16,7 @@ On the left side of the screen, a continuous stream of rumors, fake news, and re
 
 From here, users can explore companies, invest or withdraw money, consult AI for feedback, learn concepts, write personal notes, or compete with other players.
 
-AI Architecture (Three Dedicated AI Models)
+## AI Architecture (Three Dedicated AI Models)
 
 RumorStreet uses three separate AI models, each trained and optimized for a specific role.
 
@@ -26,7 +26,7 @@ The second AI model acts as an interactive mentor. When users choose to “Play 
 
 The third AI model is designed purely for knowledge and education. It explains financial terms, metrics, indicators, and concepts in very simple language. It can also analyze uploaded company annual reports (PDFs) and extract or explain specific metrics the user wants to understand.
 
-Page-by-Page Feature Explanation
+## Page-by-Page Feature Explanation
 
 The welcome page is highly interactive and visually rich, designed to immediately immerse the user in the experience. Navigation begins only after a user interaction, reinforcing engagement.
 
@@ -50,6 +50,7 @@ The “Learn with AI” page provides a chat-based interface similar to ChatGPT,
 
 The tournament section allows users to compete with others in metric-based quizzes, short-term trading battles, or long-term investing challenges, simulating different market strategies.
 
-Why RumorStreet Matters
+## Why RumorStreet Matters
 
 RumorStreet bridges the gap between theory and reality. It teaches users not just what markets are, but how they behave under pressure. It helps users recognize manipulation, emotional traps, and poor decision-making habits before they face real financial loss.
+
