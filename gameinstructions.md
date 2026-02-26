@@ -1,7 +1,7 @@
 # RumorStreet
 
 
-### This is a Web-Game about stock market investing where the users will invest on the rumors or the news which will continuously being generated in a separate section and that news will be 100% based on original news but about 2-3 years older news. 
+### This is a Web-Game about stock market investing where the users will invest on the rumors or the news which will continuously being generated in a separate section and that news will be 100% based on original news but about 2-3 years older news and also includes some aigenerated news based on real world rumors patterns. 
 
 
 ## Instructions based on several different webpages which will be there in the game
