@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { motion } from "framer-motion";
+import { supabase } from "@/lib/supabase";
 
 export default function Auth() {
   const router = useRouter();
@@ -12,26 +13,92 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agreed, setAgreed] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleGoogleLogin = () => {
-    // TODO: Implement Google OAuth
-    console.log("Google login clicked");
+  const handleGoogleLogin = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/home`,
+        },
+      });
+
+      if (error) throw error;
+    } catch (err: any) {
+      setError(err.message || "Google login failed");
+      console.error("Google login error:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement backend authentication
-    if (isLogin) {
-      console.log("Login:", { email, password });
-    } else {
-      if (password !== confirmPassword) {
-        alert("Passwords do not match!");
-        return;
+    setError("");
+    setLoading(true);
+
+    try {
+      if (isLogin) {
+        // Login with email/password
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) throw error;
+
+        // Successfully logged in
+        router.push("/home");
+      } else {
+        // Signup validation
+        if (password !== confirmPassword) {
+          setError("Passwords do not match!");
+          setLoading(false);
+          return;
+        }
+
+        if (password.length < 6) {
+          setError("Password must be at least 6 characters");
+          setLoading(false);
+          return;
+        }
+
+        // Sign up with email/password
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/home`,
+          },
+        });
+
+        if (error) throw error;
+
+        // Check if email confirmation is required
+        if (data.user && !data.session) {
+          setError("Please check your email to confirm your account!");
+        } else {
+          router.push("/home");
+        }
       }
-      console.log("Signup:", { email, password });
+    } catch (err: any) {
+      setError(err.message || "Authentication failed");
+      console.error("Auth error:", err);
+    } finally {
+      setLoading(false);
     }
-    // Navigate to home page
-    router.push("/home");
+  };
+
+  // Check if form is valid
+  const isFormValid = () => {
+    if (!email || !password) return false;
+    if (!isLogin && (!agreed || !confirmPassword)) return false;
+    return true;
   };
 
   const containerVariants = {
@@ -56,7 +123,7 @@ export default function Auth() {
 
       {/* Back button */}
       <motion.button
-        onClick={() => router.back()}
+        onClick={() => router.push("/welcome")}
         className="absolute top-8 left-8 z-30 text-accent-gold hover:text-accent-green transition-colors"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -85,14 +152,22 @@ export default function Auth() {
           animate="visible"
         >
           {/* Title */}
-          <h2 className="text-3xl font-bold text-accent-gold mb-8 text-center">
+          <h2 className="text-3xl font-bold text-accent-gold mb-6 text-center">
             {isLogin ? "Welcome Back" : "Create Account"}
           </h2>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-500 bg-opacity-10 border border-red-500 rounded text-red-400 text-sm text-center">
+              {error}
+            </div>
+          )}
 
           {/* Google Login Button */}
           <button
             onClick={handleGoogleLogin}
-            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 px-4 rounded-lg mb-6 transition-all duration-300 flex items-center justify-center gap-2"
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg mb-6 transition-all duration-300 flex items-center justify-center gap-2"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -215,10 +290,10 @@ export default function Auth() {
               {/* Proceed Button */}
               <button
                 onClick={handleSubmit}
-                disabled={!isLogin && !agreed}
+                disabled={!isFormValid() || loading}
                 className="bg-gradient-to-r from-accent-gold to-yellow-500 hover:from-yellow-500 hover:to-accent-gold disabled:opacity-50 disabled:cursor-not-allowed text-dark-900 font-bold py-3 px-6 rounded-lg transition-all duration-300 whitespace-nowrap"
               >
-                Proceed
+                {loading ? "Loading..." : "Proceed"}
               </button>
             </div>
           </div>
