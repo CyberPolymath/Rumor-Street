@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { motion } from "framer-motion";
@@ -15,6 +15,37 @@ export default function Auth() {
   const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const hasRedirectedRef = useRef(false);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (session && !hasRedirectedRef.current) {
+        hasRedirectedRef.current = true;
+        sessionStorage.setItem("auth_screen_seen", "1");
+        router.replace("/home");
+      }
+    };
+
+    checkSession();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session && !hasRedirectedRef.current) {
+        hasRedirectedRef.current = true;
+        sessionStorage.setItem("auth_screen_seen", "1");
+        router.replace("/home");
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [router]);
 
   const handleGoogleLogin = async () => {
     try {
@@ -24,7 +55,7 @@ export default function Auth() {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/home`,
+          redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 

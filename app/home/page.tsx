@@ -98,8 +98,21 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterQuery, setFilterQuery] = useState("");
   const [hoveredCompany, setHoveredCompany] = useState<number | null>(null);
-  const hoverTimeoutRef = useRef<NodeJS.Timeout>(null);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isMapFullscreen, setIsMapFullscreen] = useState(false);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      router.replace("/welcome");
+    };
+
+    window.history.pushState(null, "", window.location.href);
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [router]);
 
   const filteredRumors = RUMORS.filter(
     (rumor) =>

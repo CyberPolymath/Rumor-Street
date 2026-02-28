@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { motion } from "framer-motion";
+import { supabase } from "@/lib/supabase";
 
 export default function Welcome() {
   const router = useRouter();
   const [showSubtitle, setShowSubtitle] = useState(false);
   const [showCTA, setShowCTA] = useState(false);
   const [exitAnimation, setExitAnimation] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   useEffect(() => {
     // Show subtitle after title animation
@@ -28,12 +30,26 @@ export default function Welcome() {
     };
   }, []);
 
-  const handleNavigation = () => {
+  const handleNavigation = async () => {
+    if (isNavigating) return;
+    setIsNavigating(true);
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    const hasSeenAuthScreen = sessionStorage.getItem("auth_screen_seen") === "1";
+    const targetRoute = session && hasSeenAuthScreen ? "/home" : "/auth";
+
+    if (targetRoute === "/auth") {
+      sessionStorage.setItem("auth_screen_seen", "1");
+    }
+
     // Trigger exit animation
     setExitAnimation(true);
     // Navigate after animation completes
     setTimeout(() => {
-      router.push("/auth");
+      router.push(targetRoute);
     }, 800);
   };
 
@@ -48,7 +64,7 @@ export default function Welcome() {
       window.removeEventListener("click", handleNavigation);
       window.removeEventListener("keydown", handleNavigation);
     };
-  }, [router]);
+  }, [router, isNavigating]);
 
   // Title zoom animation
   const titleVariants = {
