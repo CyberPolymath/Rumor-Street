@@ -67,7 +67,7 @@ export default function Account() {
     setSaveMessage("");
 
     try {
-      const { error } = await supabase.from("profiles").upsert({
+      console.log('💾 Saving profile data:', {
         id: user.id,
         username: userName,
         full_name: fullName,
@@ -77,11 +77,30 @@ export default function Account() {
         email,
       });
 
-      if (error) throw error;
+      const { data, error } = await supabase
+        .from("profiles")
+        .upsert({
+          id: user.id,
+          username: userName,
+          full_name: fullName,
+          dob: dob || null,
+          gender: gender || 'Not specified',
+          phone: phone || null,
+          email,
+          updated_at: new Date().toISOString(),
+        })
+        .select();
 
+      if (error) {
+        console.error('❌ Save error:', error);
+        throw error;
+      }
+
+      console.log('✅ Profile saved:', data);
       setSaveMessage("✅ Profile saved successfully!");
       setTimeout(() => setSaveMessage(""), 3000);
     } catch (err: any) {
+      console.error('❌ Exception saving profile:', err);
       setSaveMessage(`❌ Error: ${err.message}`);
     } finally {
       setSaving(false);
