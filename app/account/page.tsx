@@ -19,6 +19,7 @@ export default function Account() {
   const [gender, setGender] = useState("Not specified");
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [otpSent, setOtpSent] = useState({ email: false, phone: false });
   const [verified, setVerified] = useState({ email: false, phone: false });
 
@@ -97,11 +98,18 @@ export default function Account() {
       }
 
       console.log('✅ Profile saved:', data);
-      setSaveMessage("✅ Profile saved successfully!");
-      setTimeout(() => setSaveMessage(""), 3000);
+      // Show success modal
+      setShowSuccessModal(true);
+      
+      // Auto-navigate to home after 2.5 seconds
+      setTimeout(() => {
+        setShowSuccessModal(false);
+        router.push("/home");
+      }, 2500);
     } catch (err: any) {
       console.error('❌ Exception saving profile:', err);
       setSaveMessage(`❌ Error: ${err.message}`);
+      setTimeout(() => setSaveMessage(""), 3000);
     } finally {
       setSaving(false);
     }
@@ -151,7 +159,72 @@ export default function Account() {
   }
 
   return (
-    <div className="w-full h-screen bg-dark-900 overflow-auto">
+    <div className="w-full h-screen bg-dark-900 overflow-auto" style={showSuccessModal ? { overflow: 'hidden' } : {}}>
+      {/* Success Modal with Blur Background */}
+      {showSuccessModal && (
+        <motion.div
+          className="fixed inset-0 flex items-center justify-center z-50"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          {/* Blurred Background */}
+          <motion.div
+            className="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-md"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          />
+
+          {/* Success Card */}
+          <motion.div
+            className="relative bg-gradient-to-br from-dark-800 to-dark-900 border-3 border-accent-gold rounded-2xl p-12 shadow-2xl max-w-md w-full mx-4"
+            initial={{ opacity: 0, scale: 0.3, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ type: "spring", stiffness: 200, damping: 20 }}
+          >
+            {/* Success Icon */}
+            <motion.div
+              className="flex justify-center mb-6"
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 0.5 }}
+            >
+              <div className="text-6xl">✅</div>
+            </motion.div>
+
+            {/* Success Message */}
+            <h2 className="text-3xl font-bold text-accent-gold text-center mb-4">
+              Success!
+            </h2>
+            <p className="text-white text-center text-lg mb-8">
+              Your account details have been successfully saved.
+            </p>
+
+            {/* Loading Animation */}
+            <div className="flex justify-center items-center gap-2 mb-6">
+              <motion.div
+                className="w-2 h-2 bg-accent-gold rounded-full"
+                animate={{ y: [-4, 4, -4] }}
+                transition={{ duration: 0.6, repeat: Infinity }}
+              />
+              <motion.div
+                className="w-2 h-2 bg-accent-gold rounded-full"
+                animate={{ y: [-4, 4, -4] }}
+                transition={{ duration: 0.6, repeat: Infinity, delay: 0.1 }}
+              />
+              <motion.div
+                className="w-2 h-2 bg-accent-gold rounded-full"
+                animate={{ y: [-4, 4, -4] }}
+                transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }}
+              />
+            </div>
+
+            {/* Redirect Message */}
+            <p className="text-gray-400 text-center text-sm">
+              Redirecting to home...
+            </p>
+          </motion.div>
+        </motion.div>
+      )}
       {/* Navbar */}
       <nav className="bg-dark-800 border-b-2 border-accent-gold border-opacity-30 sticky top-0 z-40 px-8 py-4">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
@@ -201,6 +274,17 @@ export default function Account() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
+        <div className="mb-6">
+          <motion.button
+            onClick={() => router.push("/home")}
+            className="bg-dark-800 border-2 border-accent-gold text-accent-gold hover:text-accent-green hover:border-accent-green font-bold px-5 py-2 rounded-lg transition-all"
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            ← Back to Home
+          </motion.button>
+        </div>
+
         {/* Status Message */}
         {saveMessage && (
           <motion.div
