@@ -40,20 +40,21 @@ export default function Portfolio() {
     <div className="w-full h-screen bg-dark-900 overflow-auto">
       {/* Navbar */}
       <nav className="bg-dark-800 border-b-2 border-accent-gold border-opacity-30 sticky top-0 z-40 px-8 py-4">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
+        <div className="grid grid-cols-3 items-center max-w-7xl mx-auto">
           {/* Back Button (Left) */}
           <motion.button
             onClick={() => router.push("/home")}
-            className="text-accent-gold hover:text-accent-green transition-colors"
+            className="justify-self-start w-10 h-10 flex items-center justify-center text-accent-gold hover:text-accent-green transition-colors"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
+            title="Back"
           >
-            <span className="text-2xl">← Back to Home</span>
+            <span className="text-xl">←</span>
           </motion.button>
 
           {/* Title (Center) */}
           <motion.h1
-            className="text-3xl font-bold text-accent-gold tracking-widest"
+            className="text-3xl font-bold text-accent-gold tracking-widest text-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6 }}
@@ -64,9 +65,10 @@ export default function Portfolio() {
           {/* Account Icon (Right) */}
           <motion.button
             onClick={() => router.push("/account")}
-            className="text-accent-gold hover:text-accent-green transition-colors text-3xl"
+            className="justify-self-end w-10 h-10 flex items-center justify-center text-accent-gold hover:text-accent-green transition-colors text-3xl"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
+            title="Account"
           >
             👤
           </motion.button>
