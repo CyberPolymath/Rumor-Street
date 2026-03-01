@@ -27,7 +27,34 @@ export async function GET(request: NextRequest) {
         },
       }
     );
-    await supabase.auth.exchangeCodeForSession(code);
+    
+    // Exchange code for session
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    
+    if (data.session?.user) {
+      const user = data.session.user;
+      
+      // Ensure profile exists for this user
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+
+      // If profile doesn't exist, create it
+      if (!existingProfile) {
+        await supabase.from('profiles').insert({
+          id: user.id,
+          email: user.email || '',
+          username: user.email?.split('@')[0] || 'User',
+          full_name: user.user_metadata?.full_name || '',
+          avatar_url: user.user_metadata?.avatar_url || '',
+          wallet_balance: 10000, // Starting balance
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+      }
+    }
   }
 
   return response;

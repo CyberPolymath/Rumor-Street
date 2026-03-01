@@ -46,5 +46,5 @@ export async function middleware(req: NextRequest) {
 
 // Specify which routes this middleware should run on
 export const config = {
-  matcher: ['/home/:path*', '/auth', '/portfolio/:path*', '/account/:path*'],
+  matcher: ['/home/:path*', '/auth', '/portfolio/:path*', '/account/:path*', '/leaderboard/:path*', '/playAI/:path*', '/learnAI/:path*', '/knowledge/:path*', '/tournament/:path*'],
 };

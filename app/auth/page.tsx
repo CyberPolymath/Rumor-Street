@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
+import { ensureProfileExists } from "@/lib/profileHelper";
 
 export default function Auth() {
   const router = useRouter();
@@ -34,9 +35,11 @@ export default function Auth() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session && !hasRedirectedRef.current) {
         hasRedirectedRef.current = true;
+        // Ensure profile exists for user
+        await ensureProfileExists(session.user);
         sessionStorage.setItem("auth_screen_seen", "1");
         router.replace("/home");
       }
@@ -76,12 +79,21 @@ export default function Auth() {
     try {
       if (isLogin) {
         // Login with email/password
+        console.log('🔐 Attempting login with:', email);
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (error) throw error;
+
+        console.log('✅ Login successful, user:', data.user?.id);
+
+        // For existing users, ensure profile exists (fallback)
+        if (data.user) {
+          console.log('📝 Ensuring profile exists for login user...');
+          await ensureProfileExists(data.user);
+        }
 
         // Successfully logged in
         router.push("/home");
@@ -100,6 +112,7 @@ export default function Auth() {
         }
 
         // Sign up with email/password
+        console.log('📝 Attempting signup with:', email);
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -108,18 +121,31 @@ export default function Auth() {
           },
         });
 
-        if (error) throw error;
+        if (error) {
+          console.error('❌ Signup error:', error);
+          throw error;
+        }
+
+        console.log('✅ Signup successful, user:', data.user?.id);
+        console.log('Session available:', !!data.session);
+
+        // Profile will be created automatically by database trigger
+        console.log('📧 Profile will be created automatically by trigger');
 
         // Check if email confirmation is required
         if (data.user && !data.session) {
-          setError("Please check your email to confirm your account!");
+          console.log('📧 Email confirmation required');
+          setError("✅ Account created! Please check your email to confirm your account!");
         } else {
+          console.log('✅ No email confirmation needed, proceeding to home');
+          // Small delay to allow trigger to run
+          await new Promise(resolve => setTimeout(resolve, 1000));
           router.push("/home");
         }
       }
     } catch (err: any) {
+      console.error('❌ Auth error:', err);
       setError(err.message || "Authentication failed");
-      console.error("Auth error:", err);
     } finally {
       setLoading(false);
     }
