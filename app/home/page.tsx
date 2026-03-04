@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import GameMap from "@/components/GameMap";
+import { supabase } from "@/lib/supabase";
 
 interface Rumor {
   id: number;
@@ -20,23 +21,13 @@ interface Company {
   id: number;
   name: string;
   symbol: string;
-  x: number;
-  y: number;
+  lat: number;
+  lng: number;
   price: string;
   change: string;
   color: string;
+  headquarters: string;
 }
-
-const COMPANIES: Company[] = [
-  { id: 1, name: "Amazon", symbol: "AMZN", x: 50, y: 30, price: "$145.30", change: "+2.40%", color: "#f59e0b" },
-  { id: 2, name: "Google", symbol: "GOOGL", x: 70, y: 25, price: "$140.50", change: "+1.85%", color: "#3b82f6" },
-  { id: 3, name: "Apple", symbol: "AAPL", x: 75, y: 50, price: "$189.20", change: "+0.95%", color: "#6b7280" },
-  { id: 4, name: "Tesla", symbol: "TSLA", x: 45, y: 55, price: "$242.80", change: "-1.20%", color: "#ef4444" },
-  { id: 5, name: "Microsoft", symbol: "MSFT", x: 60, y: 65, price: "$420.15", change: "+2.10%", color: "#0ea5e9" },
-  { id: 6, name: "Meta", symbol: "META", x: 65, y: 40, price: "$310.75", change: "+3.50%", color: "#3b82f6" },
-  { id: 7, name: "NVIDIA", symbol: "NVDA", x: 40, y: 70, price: "$875.50", change: "+5.20%", color: "#a3e635" },
-  { id: 8, name: "Flipkart", symbol: "FLPK", x: 55, y: 75, price: "$85.90", change: "-0.85%", color: "#fbbf24" },
-];
 
 const RUMORS: Rumor[] = [
   {
@@ -100,6 +91,35 @@ export default function Home() {
   const [hoveredCompany, setHoveredCompany] = useState<number | null>(null);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isMapFullscreen, setIsMapFullscreen] = useState(false);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [loadingCompanies, setLoadingCompanies] = useState(true);
+
+  // Fetch companies from Supabase
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('companies')
+          .select('*')
+          .order('symbol', { ascending: true });
+
+        if (error) {
+          console.error('Error fetching companies:', error);
+          return;
+        }
+
+        if (data) {
+          setCompanies(data);
+        }
+      } catch (err) {
+        console.error('Exception fetching companies:', err);
+      } finally {
+        setLoadingCompanies(false);
+      }
+    };
+
+    fetchCompanies();
+  }, []);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -312,7 +332,7 @@ export default function Home() {
 
           {/* Map Area */}
           <div className="flex-1 relative overflow-hidden">
-            <GameMap searchQuery={searchQuery} />
+            <GameMap searchQuery={searchQuery} companies={companies} loading={loadingCompanies} />
 
             {/* Fullscreen Toggle Button */}
             <button

@@ -16,107 +16,17 @@ interface Company {
   price: string;
   change: string;
   color: string;
-  country: string;
+  headquarters: string;
 }
-
-// Real-world company headquarters locations
-const COMPANIES: Company[] = [
-  {
-    id: 1,
-    name: "Apple",
-    symbol: "AAPL",
-    lat: 37.3346,
-    lng: -122.0096,
-    price: "$189.20",
-    change: "+0.95%",
-    color: "#6b7280",
-    country: "USA - Cupertino, CA",
-  },
-  {
-    id: 2,
-    name: "Google",
-    symbol: "GOOGL",
-    lat: 37.422,
-    lng: -122.143,
-    price: "$140.50",
-    change: "+1.85%",
-    color: "#3b82f6",
-    country: "USA - Mountain View, CA",
-  },
-  {
-    id: 3,
-    name: "Amazon",
-    symbol: "AMZN",
-    lat: 47.6205,
-    lng: -122.3493,
-    price: "$145.30",
-    change: "+2.40%",
-    color: "#f59e0b",
-    country: "USA - Seattle, WA",
-  },
-  {
-    id: 4,
-    name: "Microsoft",
-    symbol: "MSFT",
-    lat: 47.674,
-    lng: -122.1215,
-    price: "$420.15",
-    change: "+2.10%",
-    color: "#0ea5e9",
-    country: "USA - Redmond, WA",
-  },
-  {
-    id: 5,
-    name: "Tesla",
-    symbol: "TSLA",
-    lat: 30.2672,
-    lng: -97.7431,
-    price: "$242.80",
-    change: "-1.20%",
-    color: "#ef4444",
-    country: "USA - Austin, TX",
-  },
-  {
-    id: 6,
-    name: "Meta",
-    symbol: "META",
-    lat: 37.4847,
-    lng: -122.1477,
-    price: "$310.75",
-    change: "+3.50%",
-    color: "#3b82f6",
-    country: "USA - Menlo Park, CA",
-  },
-  {
-    id: 7,
-    name: "NVIDIA",
-    symbol: "NVDA",
-    lat: 37.3725,
-    lng: -121.9849,
-    price: "$875.50",
-    change: "+5.20%",
-    color: "#a3e635",
-    country: "USA - Santa Clara, CA",
-  },
-  {
-    id: 8,
-    name: "Flipkart",
-    symbol: "FLPK",
-    lat: 12.9716,
-    lng: 77.5946,
-    price: "$85.90",
-    change: "-0.85%",
-    color: "#fbbf24",
-    country: "India - Bangalore",
-  },
-];
 
 interface GameMapProps {
   searchQuery: string;
+  companies: Company[];
+  loading: boolean;
   onSearchCleared?: () => void;
 }
 
-export default function GameMap({ searchQuery, onSearchCleared }: GameMapProps) {
+export default function GameMap({ searchQuery, companies, loading, onSearchCleared }: GameMapProps) {
   const [map, setMap] = useState<L.Map | null>(null);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [markers, setMarkers] = useState<{ [key: number]: L.Marker }>({});
@@ -135,6 +45,9 @@ export default function GameMap({ searchQuery, onSearchCleared }: GameMapProps) 
   });
 
   useEffect(() => {
+    // Don't initialize map until companies are loaded
+    if (companies.length === 0) return;
+
     // Initialize map centered on North America
     const newMap = L.map("map").setView([39, -98], 4);
 
@@ -178,7 +91,7 @@ export default function GameMap({ searchQuery, onSearchCleared }: GameMapProps) 
     // Add company markers
     const newMarkers: { [key: number]: L.Marker } = {};
 
-    COMPANIES.forEach((company) => {
+    companies.forEach((company) => {
       // Create custom marker icon
       const markerIcon = L.divIcon({
         html: `
@@ -218,7 +131,7 @@ export default function GameMap({ searchQuery, onSearchCleared }: GameMapProps) 
     return () => {
       newMap.remove();
     };
-  }, []);
+  }, [companies]);
 
   const handleZoomIn = () => {
     if (map) map.zoomIn();
@@ -315,7 +228,7 @@ export default function GameMap({ searchQuery, onSearchCleared }: GameMapProps) 
     if (!searchQuery.trim() || !map) return;
 
     // First check if it's a company
-    const company = COMPANIES.find(
+    const company = companies.find(
       (c) =>
         c.symbol.toLowerCase() === searchQuery.toLowerCase() ||
         c.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -331,10 +244,19 @@ export default function GameMap({ searchQuery, onSearchCleared }: GameMapProps) 
       // Try geocoding for places
       geocodePlace(searchQuery);
     }
-  }, [searchQuery, map, markers]);
+  }, [searchQuery, map, markers, companies]);
 
   return (
     <div className="relative w-full h-full">
+      {/* Loading Overlay */}
+      {(loading || companies.length === 0) && (
+        <div className="absolute inset-0 bg-dark-900 bg-opacity-90 flex items-center justify-center z-50">
+          <div className="text-accent-gold text-xl animate-pulse">
+            Loading companies...
+          </div>
+        </div>
+      )}
+
       {/* Leaflet Map Container */}
       <div id="map" className="w-full h-full" />
 
@@ -370,7 +292,7 @@ export default function GameMap({ searchQuery, onSearchCleared }: GameMapProps) 
               <div className="flex-1">
                 <h3 className="text-2xl font-bold text-accent-gold mb-1">{selectedCompany.symbol}</h3>
                 <p className="text-sm text-gray-400">{selectedCompany.name}</p>
-                <p className="text-xs text-gray-500 mt-1">{selectedCompany.country}</p>
+                <p className="text-xs text-gray-500 mt-1">{selectedCompany.headquarters}</p>
               </div>
               
               <div className="flex flex-col items-end gap-1 ml-4">
